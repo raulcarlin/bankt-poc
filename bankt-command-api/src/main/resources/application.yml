@@ -1,0 +1,12 @@
+server:
+  port: 8081
+
+spring:
+  data:
+    mongodb:
+      url: mongodb://user:password@localhost:27017/bankt_event_store?authSource=admin
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

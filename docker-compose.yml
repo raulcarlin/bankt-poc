@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      - ZOO_ENABLE_AUTH=yes
+      - ZOO_CLIENT_USER=user
+      - ZOO_CLIENT_PASSWORD=password
+    volumes:
+      - "zookeeper_data:/bitnami"
+
+  kafka:
+    image: bitnami/kafka:3.4
+    ports:
+      - "9092:9092"
+    restart: always
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ZOOKEEPER_USER=user
+      - KAFKA_ZOOKEEPER_PASSWORD=password
+    depends_on:
+      - zookeeper
+    volumes:
+      - "kafka_data:/bitnami"
+
+  mongodb:
+    image: bitnami/mongodb:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_ROOT_PASSWORD=password
+      - MONGODB_DATABASE=bankt_event_store
+    volumes:
+      - 'mongodb_data:/bitnami/mongodb'
+
+  mysql:
+    image: bitnami/mysql:8.0
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=bankt_query_db
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mysql/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - 'mysql_data:/bitnami/mysql/data'
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  mysql_data:
+    driver: local    
