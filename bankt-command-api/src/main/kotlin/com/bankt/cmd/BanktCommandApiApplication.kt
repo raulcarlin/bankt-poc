@@ -1,4 +1,4 @@
-package com.bankt.command
+package com.bankt.cmd
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

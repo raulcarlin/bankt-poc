@@ -16,9 +16,10 @@ repositories {
 }
 
 dependencies {
+	implementation(project(":bankt-cqrs-core"))
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-	implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
+	implementation("org.mariadb:r2dbc-mariadb:1.1.3")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")

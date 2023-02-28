@@ -1,25 +1,21 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   r2dbc:
-    url: r2dbc:mysql://root:password@localhost:3306/bankt-query-db?createDatabaseIfNotExist=true
+    url: r2dbc:mariadb://user:password@localhost:3306/bankt_query_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
     pool:
       initial-size: 5
       max-size: 20
       max-idle-time: 30m
       validation-query: SELECT 1
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/bankAccount?createDatabaseIfNotExist=true
-    username: root
-    password: techbankRootPsw
   kafka:
     listener:
       ack-mode: MANUAL_IMMEDIATE
     consumer:
       bootstrap-servers: localhost:9092
-      group-id: bankaccConsumer
+      group-id: bankt-query
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -28,3 +24,8 @@ spring:
           json:
             trusted:
               packages: '*'
+
+logging:
+  level:
+    org.apache.kafka: OFF
+    org.springframework.kafka: WARN
