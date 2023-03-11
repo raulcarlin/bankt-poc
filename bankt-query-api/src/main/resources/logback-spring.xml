@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <springProfile name="local|test">
+        <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>
+                    %d{dd-MM-yyyy HH:mm:ss}%highlight(%5p) %magenta([%X{traceId:-},%X{spanId:-}]) %cyan([%15.15t]) %magenta(%logger{39}:%L) - %msg%n%rEx
+                </Pattern>
+            </layout>
+        </appender>
+        <root level="info">
+            <appender-ref ref="Console"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!(local|test)">
+        <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel>
+                        <fieldName>log_level</fieldName>
+                    </logLevel>
+                    <pattern>
+                        <pattern>
+                            <pattern>
+                                {
+                                "traceId": "%X{traceId:-}",
+                                "spanId": "%X{spanId:-}",
+                                "className": "%logger{39}:%L",
+                                "message": "#tryJson{%msg}",
+                                "stackTrace": "%rEx"
+                                }
+                            </pattern>
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+        <root level="info">
+            <appender-ref ref="stdout"/>
+        </root>
+    </springProfile>
+</configuration>

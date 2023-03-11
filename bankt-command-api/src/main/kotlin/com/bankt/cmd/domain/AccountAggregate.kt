@@ -1,30 +1,41 @@
 package com.bankt.cmd.domain
 
-import com.bankt.cmd.command.api.OpenAccountCommand
-import com.bankt.core.event.AccountEvent
+import com.bankt.cmd.api.api.CloseAccountCommand
+import com.bankt.cmd.api.api.DepositFundsCommand
+import com.bankt.cmd.api.api.OpenAccountCommand
+import com.bankt.cmd.api.api.WithdrawFundsCommand
 import com.bankt.core.event.AccountClosedEvent
+import com.bankt.core.event.AccountOpenedEvent
 import com.bankt.core.event.FundsDepositedEvent
 import com.bankt.core.event.FundsWithrawnEvent
-import com.bankt.core.event.AccountOpenedEvent
-import com.bankt.core.domain.AggregateRoot
-import com.bankt.core.event.BaseEvent
+import org.axonframework.commandhandling.CommandHandler
+import org.axonframework.eventsourcing.EventSourcingHandler
+import org.axonframework.modelling.command.AggregateIdentifier
+import org.axonframework.modelling.command.AggregateLifecycle
+import org.axonframework.spring.stereotype.Aggregate
 import java.time.LocalDateTime
 
+@Aggregate
 class AccountAggregate(
-    private var balance: Double,
-    private var active: Boolean,
-) : AggregateRoot() {
+    @AggregateIdentifier
+    var id: String = "",
+    var balance: Double = 0.0,
+    var active: Boolean = false
+) {
 
-    constructor() :  this(
+    constructor() : this(
+        id = "",
         balance = 0.0,
         active = false
     )
 
+    @CommandHandler
     constructor(openCommand: OpenAccountCommand) : this(
-        balance = 0.0,
-        active = false
+        id = openCommand.id,
+        balance = openCommand.openingBalance,
+        active = true
     ) {
-        raiseEvent(
+        AggregateLifecycle.apply(
             AccountOpenedEvent(
                 id = openCommand.id,
                 openingBalance = openCommand.openingBalance,
@@ -35,20 +46,25 @@ class AccountAggregate(
         )
     }
 
-    fun isActive() = active
-
-    override fun apply(event: BaseEvent) {
-        with(event as AccountEvent) {
-            when (this) {
-                is AccountOpenedEvent -> accountOpened(this)
-                is AccountClosedEvent -> accountClosed(this)
-                is FundsWithrawnEvent -> fundsWithdrawn(this)
-                is FundsDepositedEvent -> fundsDeposited(this)
-            }
-        }
+    @CommandHandler
+    fun handle(command: DepositFundsCommand) {
+        depositFunds(command.amount)
     }
 
-    private fun accountOpened(event: AccountOpenedEvent) {
+    @CommandHandler
+    fun handle(command: WithdrawFundsCommand) {
+        withdrawFunds(command.amount)
+    }
+
+    @CommandHandler
+    fun handle(command: CloseAccountCommand) {
+        closeAccount()
+    }
+
+    fun isActive() = active
+
+    @EventSourcingHandler
+    fun on(event: AccountOpenedEvent) {
         this.id = event.id
         this.balance = event.openingBalance
         this.active = true
@@ -58,13 +74,14 @@ class AccountAggregate(
         require(active) { "Account is closed!" }
         require(amount > 0) { "Amount should be greater than 0!" }
 
-        raiseEvent(FundsDepositedEvent(
+        AggregateLifecycle.apply(FundsDepositedEvent(
             id = this.id,
             amount = amount
         ))
     }
 
-    private fun fundsDeposited(event: FundsDepositedEvent) {
+    @EventSourcingHandler
+    fun on(event: FundsDepositedEvent) {
         this.balance += event.amount
     }
 
@@ -72,25 +89,27 @@ class AccountAggregate(
         require(active) { "Account is closed!" }
         require(amount > 0 && balance > amount) { "Amount should be greater than 0 and smaller then balance!" }
 
-        raiseEvent(FundsWithrawnEvent(
+        AggregateLifecycle.apply(FundsWithrawnEvent(
             id = this.id,
             amount = amount
         ))
     }
 
-    private fun fundsWithdrawn(event: FundsWithrawnEvent) {
+    @EventSourcingHandler
+    fun on(event: FundsWithrawnEvent) {
         this.balance -= event.amount
     }
 
     fun closeAccount() {
         require(active) { "Account is already closed!" }
 
-        raiseEvent(AccountClosedEvent(
+        AggregateLifecycle.apply(AccountClosedEvent(
             id = this.id
         ))
     }
 
-    private fun accountClosed(event: AccountClosedEvent) {
+    @EventSourcingHandler
+    fun on(event: AccountClosedEvent) {
         this.active = false
     }
 }

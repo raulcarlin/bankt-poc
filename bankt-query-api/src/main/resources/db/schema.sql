@@ -5,6 +5,5 @@ CREATE TABLE IF NOT EXISTS bank_accounts
     type VARCHAR(128) DEFAULT NULL,
     balance INT NOT NULL,
     created_at DATETIME,
-    updated_at DATETIME,
-    last_event_version INT NOT NULL
+    updated_at DATETIME
 );

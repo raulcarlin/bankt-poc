@@ -1,28 +1,27 @@
 package com.bankt.core.event
 
-import com.bankt.core.dto.AccountType
 import java.time.LocalDateTime
 
-sealed class AccountEvent : BaseEvent()
+sealed class AccountEvent
 
 data class AccountOpenedEvent(
-    override val id: String,
+    val id: String,
     val holder: String,
-    val type: AccountType,
+    val type: String,
     val openingBalance: Double,
     val createdAt: LocalDateTime
 ) : AccountEvent()
 
 class AccountClosedEvent(
-    override val id: String
+    val id: String
 ) : AccountEvent()
 
 data class FundsDepositedEvent(
-    override val id: String,
+    val id: String,
     val amount: Double
 ) : AccountEvent()
 
 data class FundsWithrawnEvent(
-    override val id: String,
+    val id: String,
     val amount: Double
 ) : AccountEvent()
