@@ -9,7 +9,7 @@ services:
       - 8124:8124
 
   mariadb:
-    image: bitnami/mariadb:10.11
+    image: bitnami/mariadb
     ports:
       - '3306:3306'
     environment:
